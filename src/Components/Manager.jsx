@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer, toast } from "react-toastify";
+import { v4 as uuidv4 } from "uuid";
 
 const Manager = () => {
   const ref = useRef();
@@ -9,22 +10,20 @@ const Manager = () => {
   const [passwordArray, setPasswordArray] = useState([]);
 
   function copyText(text) {
-    navigator.clipboard.writeText(text);
-    toast('🦄text copid to clipboard!', {
+      navigator.clipboard.writeText(text);
+      toast.info("text copied to clipboard!", {
       position: "top-right",
       autoClose: 5000,
       hideProgressBar: false,
-      closeOnClick: false,
+      closeOnClick: true,
       pauseOnHover: true,
       draggable: true,
       progress: undefined,
-      theme: "light",
-      transition: "Bounce",
-      });
+      theme: "colored",
+    });
   }
 
   useEffect(() => {
-
     let passwords = localStorage.getItem("passwords");
     // let passwordArray;
     if (passwords) {
@@ -33,11 +32,9 @@ const Manager = () => {
   }, []);
 
   const showPassword = () => {
-
     if (ref.current.src.includes("Icons/eye-cross.png")) {
       ref.current.src = "Icons/eye.png";
       passwordRef.current.type = "text";
-
     } else {
       ref.current.src = "Icons/eye-cross.png";
       ref.current.src = "Icons/eye-cross.png";
@@ -46,16 +43,41 @@ const Manager = () => {
   };
 
   const savePassword = () => {
+    setPasswordArray([...passwordArray, { ...form, id: uuidv4() }]);
 
-    setPasswordArray([...passwordArray, form]);
+    localStorage.setItem(
+      "passwords",
+      JSON.stringify([...passwordArray, { ...form, id: uuidv4() }])
+    );
 
-    localStorage.setItem("passwords", JSON.stringify([...passwordArray, form]));
+    setForm({ site: "", username: "", password: "" });
     console.log(...passwordArray, form);
-  }
+  };
+
+  const deletePassword = (id) => {
+    let deteleResponse = confirm(
+      "Are you sure you want to delete this password?"
+    );
+
+    if (deteleResponse) {
+      setPasswordArray(passwordArray.filter((item) => item.id !== id));
+
+      localStorage.setItem(
+        "passwords",
+        JSON.stringify(passwworArray.filter((item) => item.id !== id))
+      );
+    }
+  };
+
+  const editPassword = (id) => {
+    setForm(passwordArray.filter((item) => item.id === id)[0]);
+
+    setPasswordArray(passwordArray.filter((item) => item.id !== id));
+  };
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
-  }
+  };
 
   return (
     <>
@@ -64,15 +86,14 @@ const Manager = () => {
         autoClose={5000}
         hideProgressBar={false}
         newestOnTop={false}
-        closeOnClick={false}
+        closeOnClick
         rtl={false}
         pauseOnFocusLoss
         draggable
         pauseOnHover
-        theme="light"
-        transition="Bounce"
-      ></ToastContainer>
-      
+        theme="colored"
+      />
+
       <div className="absolute top-0 z-[-2] h-screen w-screen bg-[#000000] bg-[radial-gradient(#ffffff33_1px,#00091d_1px)] bg-[size:20px_20px]"></div>
       <div className="myContainer">
         <h1 className="text-4xl font-bold text-center">
@@ -116,9 +137,13 @@ const Manager = () => {
                 name="password"
                 id=""
               />
-              <span className="absolute right-0 text-black px-4 text-center bottom-0 top-0" onClick={() => { showPassword() }}>
+              <span
+                className="absolute right-0 text-black px-4 text-center bottom-0 top-0"
+                onClick={() => {
+                  showPassword();
+                }}
+              >
                 <img
-
                   src="Icons/eye.png"
                   className="cursor-pointer"
                   ref={ref}
@@ -129,75 +154,141 @@ const Manager = () => {
             </div>
           </div>
 
-          <button onClick={savePassword} className="flex justify-center gap-2 items-center text-black bg-green-600 hover:bg-green-500 px-6 py-2 w-fit text-center mx-auto rounded-full ">
+          <button
+            onClick={savePassword}
+            className="flex justify-center gap-2 items-center text-black bg-green-600 hover:bg-green-500 px-6 py-2 w-fit text-center mx-auto rounded-full "
+          >
             <lord-icon
               src="https://cdn.lordicon.com/jgnvfzqg.json"
               trigger="hover"
             ></lord-icon>
-            Add Password
+            Save Password
           </button>
         </div>
 
         <div className="passwords">
-          <h2 className="font-bold text-2xl py-4 text-white text-center">Your Passwords</h2>
-          {passwordArray.length == 0 && <div className="text-white text-center">No Passwords to show</div>}
-          {passwordArray.length != 0 &&
+          <h2 className="font-bold text-2xl py-4 text-white text-center">
+            Your Passwords
+          </h2>
+          {passwordArray.length == 0 && (
+            <div className="text-white text-center">No Passwords to show</div>
+          )}
+          {passwordArray.length != 0 && (
             <table className="table-auto w-full overflow-hidden rounded-md ">
               <thead className="text-white  bg-green-800">
                 <tr>
                   <th className="py-2">Site</th>
                   <th className="py-2">Username</th>
                   <th className="py-2">Password</th>
+                  <th className="py-2">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-green-100">
-
-                {
-                  passwordArray.map((item, index) => {
-                    return <tr key={index}>
-                      <td className=" text-center py-2 border " >
+                {passwordArray.map((item, index) => {
+                  return (
+                    <tr key={index}>
+                      <td className=" text-center py-2 border ">
                         <div className="flex items-center justify-center">
                           <span>{item.site}</span>
-                          <div className='coopyBtn size-7 cursor-pointer' onClick={() => { copyText(item.site) }}>
+                          <div
+                            className="coopyBtn size-7 cursor-pointer"
+                            onClick={() => {
+                              copyText(item.site);
+                            }}
+                          >
                             <lord-icon
-                              style={{ "width": "25px", "height": "25px", "paddingTop": "3px", "paddingLeft": "3px" }}
+                              style={{
+                                width: "25px",
+                                height: "25px",
+                                paddingTop: "3px",
+                                paddingLeft: "3px",
+                              }}
                               src="https://cdn.lordicon.com/iykgtsbt.json"
-                              trigger="hover" >
-                            </lord-icon>
+                              trigger="hover"
+                            ></lord-icon>
                           </div>
                         </div>
-                      </td >
+                      </td>
                       <td className="  text-center py-2 border">
                         <div className="flex items-center justify-center">
                           <span>{item.username}</span>
 
-                          <div className='copyBtn size-7 cursor-pointer' onClick={() => { copyText(item.username) }}>
+                          <div
+                            className="copyBtn size-7 cursor-pointer"
+                            onClick={() => {
+                              copyText(item.username);
+                            }}
+                          >
                             <lord-icon
-                              style={{ "width": "25px", "height": "25px", "paddingTop": "3px", "paddingLeft": "3px" }}
+                              style={{
+                                width: "25px",
+                                height: "25px",
+                                paddingTop: "3px",
+                                paddingLeft: "3px",
+                              }}
                               src="https://cdn.lordicon.com/iykgtsbt.json"
-                              trigger="hover" >
-                            </lord-icon>
+                              trigger="hover"
+                            ></lord-icon>
                           </div>
                         </div>
-                      </td >
-                      <td className="   text-center py-2 border ">
+                      </td>
+                      <td className="text-center py-2 border ">
                         <div className="flex items-center justify-center">
                           <span>{item.password}</span>
 
-                          <div className='copyBtn size-7 cursor-pointer' onClick={() => { copyText(item.password) }}>
+                          <div
+                            className="copyBtn size-7 cursor-pointer"
+                            onClick={() => {
+                              copyText(item.password);
+                            }}
+                          >
                             <lord-icon
-                              style={{ "width": "25px", "height": "25px", "paddingTop": "3px", "paddingLeft": "3px" }}
+                              style={{
+                                width: "25px",
+                                height: "25px",
+                                paddingTop: "3px",
+                                paddingLeft: "3px",
+                              }}
                               src="https://cdn.lordicon.com/iykgtsbt.json"
-                              trigger="hover" >
-                            </lord-icon>
+                              trigger="hover"
+                            ></lord-icon>
                           </div>
                         </div>
-                      </td >
+                      </td>
+
+                      <td className="text-center py-2 border ">
+                        <div className="flex items-center justify-center">
+                          <button
+                            className="cursor-pointer p-1.5 mx-2 bg-blue-500 text-white rounded hover:bg-blue-700"
+                            onClick={() => {
+                              editPassword(item.id);
+                            }}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="cursor-pointer p-1.5 bg-red-500 text-white rounded hover:bg-red-700"
+                            onClick={() => {
+                              deletePassword(item.id);
+                            }}
+                          >
+                            Delete
+                          </button>
+
+                          <div
+                            className="copyBtn size-7 cursor-pointer"
+                            onClick={() => {
+                              copyText(item.password);
+                            }}
+                          ></div>
+                        </div>
+                      </td>
                     </tr>
-                  })}
+                  );
+                })}
               </tbody>
             </table>
-          }
+          )}
         </div>
       </div>
     </>
