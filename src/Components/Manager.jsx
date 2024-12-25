@@ -10,8 +10,8 @@ const Manager = () => {
   const [passwordArray, setPasswordArray] = useState([]);
 
   function copyText(text) {
-      navigator.clipboard.writeText(text);
-      toast.info("text copied to clipboard!", {
+    navigator.clipboard.writeText(text);
+    toast.info("text copied to clipboard!", {
       position: "top-right",
       autoClose: 5000,
       hideProgressBar: false,
@@ -43,7 +43,9 @@ const Manager = () => {
   };
 
   const savePassword = () => {
-    setPasswordArray([...passwordArray, { ...form, id: uuidv4() }]);
+
+    if(form.site.length > 3 && form.username.length > 3 && form.password.length > 3){
+      setPasswordArray([...passwordArray, { ...form, id: uuidv4() }]);
 
     localStorage.setItem(
       "passwords",
@@ -51,7 +53,34 @@ const Manager = () => {
     );
 
     setForm({ site: "", username: "", password: "" });
+
+    toast.success("Password saved successfully", {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "colored",
+    });
     console.log(...passwordArray, form);
+
+    }
+    else{
+      toast.warn("Error: Password not saved!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+    }
+
+   
   };
 
   const deletePassword = (id) => {
@@ -64,8 +93,20 @@ const Manager = () => {
 
       localStorage.setItem(
         "passwords",
-        JSON.stringify(passwworArray.filter((item) => item.id !== id))
+        JSON.stringify(passwordArray.filter((item) => item.id !== id))
       );
+
+      toast.error("Password deleted successfully", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+      
     }
   };
 
@@ -73,6 +114,8 @@ const Manager = () => {
     setForm(passwordArray.filter((item) => item.id === id)[0]);
 
     setPasswordArray(passwordArray.filter((item) => item.id !== id));
+
+    
   };
 
   const handleChange = (e) => {
@@ -94,8 +137,7 @@ const Manager = () => {
         theme="colored"
       />
 
-      <div className="absolute top-0 z-[-2] h-screen w-screen bg-[#000000] bg-[radial-gradient(#ffffff33_1px,#00091d_1px)] bg-[size:20px_20px]"></div>
-      <div className="myContainer">
+      <div className="md:myContainer p-0 md:p-2 min-h-screen ">
         <h1 className="text-4xl font-bold text-center">
           <span className="text-green-700 font-bold">&lt;</span>
           <span className="text-white">Pass</span>
@@ -106,7 +148,7 @@ const Manager = () => {
         <p className="text-green-700 text-lg text-center">
           your own password manager
         </p>
-        <div className="text-white flex flex-col p-4 gap-3 items-center">
+        <div className="text-white flex flex-col p-4 gap-8 items-center">
           <input
             value={form.site}
             onChange={handleChange}
@@ -114,8 +156,9 @@ const Manager = () => {
             placeholder="Enter website url"
             className="rounded-full border border-green-500 w-full text-black p-4 py-1"
             type="text"
+            id="site"
           />
-          <div className="flex w-full gap-8 justify-between">
+          <div className="flex flex-col md:flex-row w-full justify-between gap-8">
             <input
               value={form.username}
               onChange={handleChange}
@@ -123,7 +166,7 @@ const Manager = () => {
               className="rounded-full border border-green-500 w-full text-black p-4 py-1"
               type="text"
               name="username"
-              id=""
+              id="username"
             />
 
             <div className="relative">
@@ -132,10 +175,10 @@ const Manager = () => {
                 onChange={handleChange}
                 placeholder="Enter password"
                 ref={passwordRef}
-                type="password"
-                className="rounded-full border border-green-500  text-black p-4 py-1"
+              
+                className="rounded-full border border-green-500 w-full text-black p-4 py-1"
                 name="password"
-                id=""
+                id="password"
               />
               <span
                 className="absolute right-0 text-black px-4 text-center bottom-0 top-0"
@@ -174,7 +217,7 @@ const Manager = () => {
             <div className="text-white text-center">No Passwords to show</div>
           )}
           {passwordArray.length != 0 && (
-            <table className="table-auto w-full overflow-hidden rounded-md ">
+            <table className="table-auto w-full overflow-hidden rounded-md mb-10 ">
               <thead className="text-white  bg-green-800">
                 <tr>
                   <th className="py-2">Site</th>
